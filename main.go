@@ -10,6 +10,7 @@ import (
 	"go/ast"
 	"go/format"
 	"go/parser"
+	"go/printer"
 	"go/token"
 	"io"
 	"io/ioutil"
@@ -481,15 +482,43 @@ func (c *config) format(file ast.Node, rwErrs error) (string, error) {
 		// other declarations in between them. Printing the file and cutting
 		// the selection is the easier and simpler to do.
 		var buf bytes.Buffer
-		err := format.Node(&buf, c.fset, file)
+
+		// this is the default config from `format.Node()`, but we add
+		// `printer.SourcePos` to get the original source position of the
+		// modified lines
+		cfg := printer.Config{Mode: printer.SourcePos | printer.UseSpaces | printer.TabIndent, Tabwidth: 8}
+		err := cfg.Fprint(&buf, c.fset, file)
 		if err != nil {
 			return "", err
 		}
 
 		var lines []string
 		scanner := bufio.NewScanner(bytes.NewBufferString(buf.String()))
+		index := 0
 		for scanner.Scan() {
-			lines = append(lines, scanner.Text())
+			txt := scanner.Text()
+
+			// check for any line directive and store it for next iteration to
+			// re-construct the original file
+			if strings.HasPrefix(txt, "//line") {
+				line := string(txt[len(txt)-1])
+				ix, err := strconv.Atoi(line)
+				if err != nil {
+					return "", err
+				}
+
+				// don't care about the first line
+				if ix != 1 {
+					index = ix
+				}
+			} else {
+				if index != 0 {
+					lines[index-1] = txt
+					index = 0 // reset
+				} else {
+					lines = append(lines, txt)
+				}
+			}
 		}
 
 		// prevent selection to be larger than the actual number of lines

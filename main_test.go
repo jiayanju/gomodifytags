@@ -303,6 +303,15 @@ func TestRewrite(t *testing.T) {
 				transform: "pascalcase",
 			},
 		},
+		{
+			file: "not_formatted",
+			cfg: &config{
+				add:       []string{"json"},
+				output:    "source",
+				line:      "3,4",
+				transform: "snakecase",
+			},
+		},
 	}
 
 	for _, ts := range test {
@@ -417,6 +426,27 @@ func TestJSON(t *testing.T) {
 			cfg: &config{
 				add:  []string{"json"},
 				line: "4,7",
+			},
+		},
+		{
+			file: "json_not_formatted",
+			cfg: &config{
+				add:  []string{"json"},
+				line: "3,4",
+			},
+		},
+		{
+			file: "json_not_formatted_2",
+			cfg: &config{
+				add:  []string{"json"},
+				line: "3,3",
+			},
+		},
+		{
+			file: "json_not_formatted_3",
+			cfg: &config{
+				add:    []string{"json"},
+				offset: 23,
 			},
 		},
 	}
