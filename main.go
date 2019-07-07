@@ -101,7 +101,7 @@ func realMain() error {
 		flagOverride  = flag.Bool("override", false, "Override current tags when adding tags")
 		flagTransform = flag.String("transform", "snakecase",
 			"Transform adds a transform rule when adding tags."+
-				" Current options: [snakecase, camelcase, lispcase]")
+				" Current options: [snakecase, camelcase, lispcase, uppercase]")
 		flagSort = flag.Bool("sort", false,
 			"Sort sorts the tags in increasing order according to the key name")
 
@@ -380,6 +380,12 @@ func (c *config) addTags(fieldName string, tags *structtag.Tags) (*structtag.Tag
 		}
 
 		name = strings.Join(titled, "")
+	case "uppercase":
+		var upperSplitted []string
+		for _, s := range splitted {
+			upperSplitted = append(upperSplitted, strings.ToUpper(s))
+		}
+		name = strings.Join(upperSplitted, "_")
 	default:
 		unknown = true
 	}
@@ -394,6 +400,11 @@ func (c *config) addTags(fieldName string, tags *structtag.Tags) (*structtag.Tag
 			// transform. We don't return above in the default as the user
 			// might pass a value
 			return nil, fmt.Errorf("unknown transform option %q", c.transform)
+		}
+
+		switch key {
+		case "gorm":
+			name = fmt.Sprintf("Column:%s", name)
 		}
 
 		tag, err := tags.Get(key)

@@ -1,3 +1,5 @@
+# Forks to adding gorm tag with Column tag like `gorm:"Column:TEST_COLUMN_NAME"
+
 # gomodifytags [![Build Status](https://travis-ci.org/fatih/gomodifytags.svg?branch=master)](https://travis-ci.org/fatih/gomodifytags)
 
 Go tool to modify/update field tags in structs. `gomodifytags` makes it easy to
